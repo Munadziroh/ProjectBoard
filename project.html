@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Monitor - ESP32 Bluetooth</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        .form-group label {
+            width: 120px;
+            font-weight: bold;
+        }
+        .form-group input {
+            padding: 6px 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .temp-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        button {
+            padding: 6px 14px;
+            cursor: pointer;
+            border: 1px solid #333;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #d0d0d0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #aaa;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        .download-container {
+            margin-top: 15px;
+            text-align: right;
+        }
+        #status {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h3 style="margin: 0;">https://....github.io</h3>
+        <button id="btnConnect" onclick="connectBLE()">🔌 Connect Bluetooth</button>
+    </div>
+    <div id="status">Status: Terputus</div>
+
+    <hr>
+
+    <div class="form-group">
+        <label for="inputNama">Nama:</label>
+        <input type="text" id="inputNama" placeholder="Masukkan nama...">
+    </div>
+
+    <div class="form-group">
+        <label for="inputHR">H.R:</label>
+        <input type="text" id="inputHR" readonly placeholder="Waiting data...">
+    </div>
+
+    <div class="form-group temp-row">
+        <label for="inputTemp">Temperature:</label>
+        <input type="text" id="inputTemp" readonly placeholder="Waiting data...">
+        <button onclick="saveData()">Save</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>HR (bpm)</th>
+                <th>Temperature (°C)</th>
+            </tr>
+        </thead>
+        <tbody id="dataTableBody">
+            <!-- Data yang di-save akan muncul di sini -->
+        </tbody>
+    </table>
+
+    <div class="download-container">
+        <button onclick="downloadCSV()">Download Data (CSV)</button>
+    </div>
+
+    <script>
+        const SERVICE_UUID = "4fa8c0d0-a5a3-11e9-a2a3-2a2ae2dbcce4";
+        const CHARACTERISTIC_UUID = "9a48ecba-a5a3-11e9-a2a3-2a2ae2dbcce4";
+
+        let savedRecords = [];
+
+        async function connectBLE() {
+            const statusDiv = document.getElementById('status');
+            try {
+                statusDiv.innerText = "Status: Mencari perangkat BLE...";
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ name: 'ESP32_Health_Monitor' }],
+                    optionalServices: [SERVICE_UUID]
+                });
+
+                statusDiv.innerText = "Status: Menghubungkan ke " + device.name + "...";
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService(SERVICE_UUID);
+                const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+
+                await characteristic.startNotifications();
+                characteristic.addEventListener('characteristicvaluechanged', handleBLEData);
+
+                statusDiv.innerText = "Status: Terhubung ke ESP32!";
+                document.getElementById('btnConnect').style.backgroundColor = '#90ee90';
+                document.getElementById('btnConnect').innerText = "Terhubung";
+
+                device.addEventListener('gattserverdisconnected', () => {
+                    statusDiv.innerText = "Status: Terputus!";
+                    document.getElementById('btnConnect').style.backgroundColor = '#e0e0e0';
+                    document.getElementById('btnConnect').innerText = "🔌 Connect Bluetooth";
+                });
+
+            } catch (error) {
+                console.error(error);
+                statusDiv.innerText = "Status Error: " + error.message;
+            }
+        }
+
+        function handleBLEData(event) {
+            const value = new TextDecoder().decode(event.target.value);
+            const data = value.split(','); // Format: "HR,Temp"
+            
+            if (data.length === 2) {
+                document.getElementById('inputHR').value = data[0] + " bpm";
+                document.getElementById('inputTemp').value = data[1] + " °C";
+            }
+        }
+
+        function saveData() {
+            const nama = document.getElementById('inputNama').value.trim();
+            const hr = document.getElementById('inputHR').value;
+            const temp = document.getElementById('inputTemp').value;
+
+            if (!nama) {
+                alert("Harap isi field Nama terlebih dahulu!");
+                return;
+            }
+            if (!hr || !temp) {
+                alert("Data HR & Temperature belum diterima dari ESP32.");
+                return;
+            }
+
+            // Simpan ke array
+            const record = { nama, hr, temp };
+            savedRecords.push(record);
+
+            // Tampilkan ke tabel
+            const tbody = document.getElementById('dataTableBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${nama}</td>
+                <td>${hr}</td>
+                <td>${temp}</td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function downloadCSV() {
+            if (savedRecords.length === 0) {
+                alert("Belum ada data yang disimpan!");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,Nama,HR (bpm),Temperature (C)\n";
+            savedRecords.forEach(r => {
+                csvContent += `"${r.nama}","${r.hr}","${r.temp}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "data_kesehatan_esp32.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
