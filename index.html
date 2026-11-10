@@ -3,17 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Monitor - ESP32 Bluetooth</title>
+    <title>Cute Health Monitor 🌸</title>
+    <!-- Google Fonts untuk font yang lebih lucu -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            border: 2px solid #333;
-            border-radius: 8px;
-            background-color: #f9f9f9;
+        :root {
+            --bg-color: #fce4ec;       /* Soft Pink Background */
+            --card-bg: #ffffff;
+            --primary-pink: #ffb7b2;   /* Soft Red/Pink */
+            --pastel-green: #b5ead7;   /* Mint Green */
+            --pastel-purple: #e2f0cb;  /* Soft Purple/Green accent */
+            --pastel-blue: #c7ceea;    /* Lavender Blue */
+            --pastel-yellow: #ffdac1;  /* Soft Yellow */
+            --text-color: #5d4037;    /* Warm Soft Brown */
         }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            max-width: 650px;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(255, 183, 178, 0.4);
+            background-image: radial-gradient(#ffb7b2 0.8px, transparent 0.8px);
+            background-size: 16px 16px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            border: 3px solid #fff;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        h2.title {
+            font-family: 'Fredoka', cursive;
+            margin: 0 0 15px 0;
+            color: #ff8b94;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -22,112 +57,193 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+
         .button-group {
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
+
+        /* Styling Tombol Lucu */
+        button {
+            font-family: 'Fredoka', cursive;
+            font-size: 14px;
+            padding: 8px 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .btn-ble {
+            background-color: var(--pastel-blue);
+            color: #4a4e69;
+        }
+
+        .btn-sim {
+            background-color: var(--pastel-yellow);
+            color: #6d4c41;
+        }
+
+        .btn-save {
+            background-color: var(--pastel-green);
+            color: #2d6a4f;
+            padding: 8px 20px;
+        }
+
+        .btn-download {
+            background-color: var(--primary-pink);
+            color: #fff;
+            padding: 10px 22px;
+            font-size: 15px;
+        }
+
+        #status {
+            font-size: 13px;
+            font-weight: 700;
+            color: #888;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 6px 14px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        /* Form Inputs */
         .form-group {
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
         }
+
         .form-group label {
-            width: 120px;
-            font-weight: bold;
+            width: 140px;
+            font-weight: 700;
+            color: #6c5ce7;
+            font-size: 15px;
         }
+
         .form-group input {
-            padding: 6px 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            font-family: 'Nunito', sans-serif;
+            padding: 10px 14px;
+            font-size: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+            background-color: #fafafa;
+            color: var(--text-color);
+            font-weight: 600;
         }
+
+        .form-group input:focus {
+            border-color: #a29bfe;
+            background-color: #fff;
+        }
+
         .temp-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
-        button {
-            padding: 6px 14px;
-            cursor: pointer;
-            border: 1px solid #333;
-            background-color: #e0e0e0;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        button:hover {
-            background-color: #d0d0d0;
-        }
-        .btn-sim {
-            background-color: #fff3cd;
-            border-color: #ffeba;
-        }
+
+        /* Table Design */
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 25px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
-        table, th, td {
-            border: 1px solid #aaa;
+
+        th {
+            background-color: #ffeaa7;
+            color: #d63031;
+            font-family: 'Fredoka', cursive;
+            padding: 12px;
+            font-size: 15px;
+            border: none;
         }
-        th, td {
-            padding: 8px;
+
+        td {
+            padding: 10px;
             text-align: center;
+            background-color: #fff;
+            border-bottom: 1px solid #ffeaa7;
+            font-size: 14px;
+            font-weight: 600;
         }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
         .download-container {
-            margin-top: 15px;
+            margin-top: 20px;
             text-align: right;
-        }
-        #status {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h3 style="margin: 0;">https://....github.io</h3>
-        <div class="button-group">
-            <button id="btnConnect" onclick="connectBLE()">🔌 Connect Bluetooth</button>
-            <button class="btn-sim" onclick="toggleSimulation()">🎲 Mode Simulasi</button>
+    <div class="container">
+        <div class="header">
+            <h2 class="title">🎀 Health Tracker</h2>
+            <div class="button-group">
+                <button id="btnConnect" class="btn-ble" onclick="connectBLE()">🔌 Connect BLE</button>
+                <button class="btn-sim" onclick="toggleSimulation()">🎲 Mode Simulasi</button>
+            </div>
         </div>
-    </div>
-    <div id="status">Status: Terputus</div>
+        
+        <div id="status">Status: Terputus 🐾</div>
 
-    <hr>
+        <div class="form-group">
+            <label for="inputNama">👤 Nama:</label>
+            <input type="text" id="inputNama" placeholder="Masukkan nama kamu...">
+        </div>
 
-    <div class="form-group">
-        <label for="inputNama">Nama:</label>
-        <input type="text" id="inputNama" placeholder="Masukkan nama...">
-    </div>
+        <div class="form-group">
+            <label for="inputHR">💓 Heart Rate:</label>
+            <input type="text" id="inputHR" readonly placeholder="Waiting data...">
+        </div>
 
-    <div class="form-group">
-        <label for="inputHR">H.R:</label>
-        <input type="text" id="inputHR" readonly placeholder="Waiting data...">
-    </div>
+        <div class="form-group temp-row">
+            <label for="inputTemp">🌡️ Suhu Body:</label>
+            <input type="text" id="inputTemp" readonly placeholder="Waiting data...">
+            <button class="btn-save" onclick="saveData()">✨ Save</button>
+        </div>
 
-    <div class="form-group temp-row">
-        <label for="inputTemp">Temperature:</label>
-        <input type="text" id="inputTemp" readonly placeholder="Waiting data...">
-        <button onclick="saveData()">Save</button>
-    </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>H.R (bpm)</th>
+                    <th>Temperature (°C)</th>
+                </tr>
+            </thead>
+            <tbody id="dataTableBody">
+                <!-- Data tersimpan akan ditambahkan di sini -->
+            </tbody>
+        </table>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nama</th>
-                <th>HR (bpm)</th>
-                <th>Temperature (°C)</th>
-            </tr>
-        </thead>
-        <tbody id="dataTableBody">
-            <!-- Data tersimpan akan muncul di sini -->
-        </tbody>
-    </table>
-
-    <div class="download-container">
-        <button onclick="downloadCSV()">Download Data (CSV)</button>
+        <div class="download-container">
+            <button class="btn-download" onclick="downloadCSV()">🎁 Download Data (CSV)</button>
+        </div>
     </div>
 
     <script>
@@ -142,11 +258,12 @@
             if (simInterval) {
                 clearInterval(simInterval);
                 simInterval = null;
-                statusDiv.innerText = "Status: Mode Simulasi Dimatikan";
+                statusDiv.innerText = "Status: Mode Simulasi Dimatikan 💤";
+                statusDiv.style.color = "#888";
             } else {
-                statusDiv.innerText = "Status: Mode Simulasi Aktif (Data Acak)";
+                statusDiv.innerText = "Status: Mode Simulasi Aktif (Data Acak) 🎲";
+                statusDiv.style.color = "#e84393";
                 simInterval = setInterval(() => {
-                    // Generate data acak
                     const randomHR = (Math.random() * (100 - 60) + 60).toFixed(1);
                     const randomTemp = (Math.random() * (37.5 - 36.0) + 36.0).toFixed(1);
                     
@@ -157,17 +274,17 @@
         }
 
         async function connectBLE() {
-            if (simInterval) toggleSimulation(); // Matikan simulasi jika menghubungkan ke BLE asli
+            if (simInterval) toggleSimulation();
             
             const statusDiv = document.getElementById('status');
             try {
-                statusDiv.innerText = "Status: Mencari perangkat BLE...";
+                statusDiv.innerText = "Status: Mencari perangkat BLE... 🔍";
                 const device = await navigator.bluetooth.requestDevice({
                     filters: [{ name: 'ESP32_Health_Monitor' }],
                     optionalServices: [SERVICE_UUID]
                 });
 
-                statusDiv.innerText = "Status: Menghubungkan ke " + device.name + "...";
+                statusDiv.innerText = "Status: Menghubungkan ke " + device.name + "... ⏳";
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService(SERVICE_UUID);
                 const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
@@ -175,12 +292,14 @@
                 await characteristic.startNotifications();
                 characteristic.addEventListener('characteristicvaluechanged', handleBLEData);
 
-                statusDiv.innerText = "Status: Terhubung ke ESP32!";
-                document.getElementById('btnConnect').style.backgroundColor = '#90ee90';
+                statusDiv.innerText = "Status: Terhubung ke ESP32! 🎉";
+                statusDiv.style.color = "#00b894";
+                document.getElementById('btnConnect').style.backgroundColor = '#b5ead7';
 
             } catch (error) {
                 console.error(error);
-                statusDiv.innerText = "Status Error: " + error.message;
+                statusDiv.innerText = "Status Error: " + error.message + " ❌";
+                statusDiv.style.color = "#d63031";
             }
         }
 
@@ -199,11 +318,11 @@
             const temp = document.getElementById('inputTemp').value;
 
             if (!nama) {
-                alert("Harap isi field Nama terlebih dahulu!");
+                alert("Harap isi field Nama terlebih dahulu ya! 😊");
                 return;
             }
             if (!hr || !temp || hr.includes("Waiting")) {
-                alert("Data HR & Temperature belum ada.");
+                alert("Data HR & Temperature belum ada 😅");
                 return;
             }
 
@@ -222,7 +341,7 @@
 
         function downloadCSV() {
             if (savedRecords.length === 0) {
-                alert("Belum ada data yang disimpan!");
+                alert("Belum ada data yang disimpan nih! 📝");
                 return;
             }
 
@@ -234,7 +353,7 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "data_kesehatan.csv");
+            link.setAttribute("download", "data_kesehatan_cute.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
